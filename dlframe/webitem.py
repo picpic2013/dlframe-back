@@ -1,4 +1,4 @@
-from logger import Logger
+from dlframe.logger import Logger
 
 class WebItem:
     logger: Logger

@@ -1,6 +1,6 @@
 from typing import Any
-from webitem import WebItem
-from dataset import DataSet
+from dlframe.webitem import WebItem
+from dlframe.dataset import DataSet
 
 class Model(WebItem):
     def __init__(self) -> None:

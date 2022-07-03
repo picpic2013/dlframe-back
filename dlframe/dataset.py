@@ -1,4 +1,4 @@
-from webitem import WebItem
+from dlframe.webitem import WebItem
 
 from typing import Any
 

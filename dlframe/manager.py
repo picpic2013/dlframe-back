@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Dict, List, Tuple
 
-from dataset import DataSet
-from splitter import Splitter
-from model import Model
-from judger import Judger
+from dlframe.dataset import DataSet
+from dlframe.splitter import Splitter
+from dlframe.model import Model
+from dlframe.judger import Judger
+from dlframe.logger import CmdLogger
 
 class ManagerConfig:
 
@@ -110,7 +111,7 @@ class Manager:
 
         assert conf.splitter in self.splitters.keys(), 'unknown splitter class name'
         splitter = self.splitters[conf.splitter]
-        for key, value in conf.splitter.items():
+        for key, value in conf.splitter_params.items():
             setattr(splitter, key, value)
 
         assert conf.model in self.models.keys(), 'unknown model class name'
@@ -127,3 +128,114 @@ class Manager:
         model.train(train_data)
         y_hat = model.test(test_data)
         judger.judge(y_hat, test_data)
+
+class CmdManager(Manager):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def register_dataset(self, dataset: DataSet, name: str = None) -> Manager:
+        if name is None:
+            name = dataset.__class__.__name__
+        dataset.logger = CmdLogger(name)
+        return super().register_dataset(dataset, name)
+
+    def register_judger(self, judger: Judger, name: str = None) -> Manager:
+        if name is None:
+            name = judger.__class__.__name__
+        judger.logger = CmdLogger(name)
+        return super().register_judger(judger, name)
+
+    def register_model(self, model: Model, name: str = None) -> Manager:
+        if name is None:
+            name = model.__class__.__name__
+        model.logger = CmdLogger(name)
+        return super().register_model(model, name)
+
+    def register_splitter(self, splitter: Splitter, name: str = None) -> Manager:
+        if name is None:
+            name = splitter.__class__.__name__
+        splitter.logger = CmdLogger(name)
+        return super().register_splitter(splitter, name)
+
+    def start(self):
+
+        def inputUntilCorrect(instruction, minn, maxx):
+            while True:
+                try:
+                    choice = int(input(instruction))
+                    if choice >= minn and choice < maxx:
+                        return choice
+                    print('invalid index')
+                except:
+                    print('please input index number')
+        
+        def inputParams(dataset_params, dataset_defaults):
+            paramDict = {}
+            if dataset_params is None:
+                dataset_params = []
+            if dataset_defaults is None:
+                dataset_defaults = []
+            deltaLength = len(dataset_params) - len(dataset_defaults)
+            for paramIdx in range(len(dataset_params)):
+                name = dataset_params[paramIdx]
+                if name == 'self' and paramIdx == 0:
+                    continue
+                if paramIdx >= deltaLength:
+                    default_value = dataset_defaults[paramIdx - deltaLength]
+                    value = input('param [{}]: (default: {})'.format(name, default_value))
+                    if value == '':
+                        value = default_value
+                else:
+                    value = input('param [{}]: '.format(name))
+                    if value == '':
+                        continue
+                paramDict.setdefault(name, value)
+            return paramDict
+
+
+        exit_program = False
+        while not exit_program:
+            assert len(self.datasets) != 0, 'no dataset'
+            for idx, name in enumerate(self.datasets.keys()):
+                print('{:3d}'.format(idx), name)
+            choice = inputUntilCorrect('please choose dataset: ', 0, len(self.datasets))
+            dataset_name = list(self.datasets.keys())[choice]
+            dataset_params, dataset_defaults = self.inspect(dataset_name)
+            dataset_params = inputParams(dataset_params, dataset_defaults)
+            print('='*50)
+
+            assert len(self.splitters) != 0, 'no splitter'
+            for idx, name in enumerate(self.splitters.keys()):
+                print('{:3d}'.format(idx), name)
+            choice = inputUntilCorrect('please choose splitter: ', 0, len(self.splitters))
+            splitter_name = list(self.splitters.keys())[choice]
+            splitter_params, splitter_defaults = self.inspect(splitter_name)
+            splitter_params = inputParams(splitter_params, splitter_defaults)
+            print('='*50)
+
+            assert len(self.models) != 0, 'no model'
+            for idx, name in enumerate(self.models.keys()):
+                print('{:3d}'.format(idx), name)
+            choice = inputUntilCorrect('please choose model: ', 0, len(self.models))
+            model_name = list(self.models.keys())[choice]
+            model_params, model_defaults = self.inspect(model_name)
+            model_params = inputParams(model_params, model_defaults)
+            print('='*50)
+
+            assert len(self.judgers) != 0, 'no judger'
+            for idx, name in enumerate(self.judgers.keys()):
+                print('{:3d}'.format(idx), name)
+            choice = inputUntilCorrect('please choose judger: ', 0, len(self.judgers))
+            judger_name = list(self.judgers.keys())[choice]
+            judger_params, judger_defaults = self.inspect(judger_name)
+            judger_params = inputParams(judger_params, judger_defaults)
+            print('='*50)
+
+            conf = ManagerConfig(
+                dataset_name, splitter_name, model_name, judger_name, 
+                dataset_params, splitter_params, model_params, judger_params
+            )
+
+            self.run(conf)
+
+            exit_program = input('Done! input [q] to quit or [Enter] to continue') == 'q'

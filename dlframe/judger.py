@@ -1,5 +1,5 @@
-from webitem import WebItem
-from dataset import DataSet
+from dlframe.webitem import WebItem
+from dlframe.dataset import DataSet
 
 class Judger(WebItem):
     def __init__(self) -> None:

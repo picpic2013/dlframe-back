@@ -1,6 +1,6 @@
 from typing import Tuple
-from webitem import WebItem
-from dataset import DataSet, ListDataSet
+from dlframe.webitem import WebItem
+from dlframe.dataset import DataSet, ListDataSet
 
 import math
 
@@ -15,7 +15,7 @@ class Splitter(WebItem):
 class DirectSplitter(Splitter):
     def __init__(self, ratio) -> None:
         super().__init__()
-        self.ratio = ratio
+        self.ratio = float(ratio)
 
     def split(self, dataset: DataSet) -> Tuple[DataSet, DataSet]:
         length = len(dataset)
