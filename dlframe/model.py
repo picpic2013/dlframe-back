@@ -6,8 +6,8 @@ class Model(WebItem):
     def __init__(self) -> None:
         super().__init__()
 
-    def train(trainDataset: DataSet) -> Any:
+    def train(self, trainDataset: DataSet) -> None:
         pass
 
-    def test(testDataset: DataSet) -> Any:
+    def test(self, testDataset: DataSet) -> Any:
         pass
