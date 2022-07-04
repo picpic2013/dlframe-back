@@ -26,7 +26,7 @@ judger.judge(y_hat, test_data)
 
 --- 
 
-本框架仅提供 WebSocket 服务，不提供页面显示。需配合[前端](http://a.v)使用。前端代码开源在[仓库]()。
+本框架仅提供 WebSocket 服务，不提供页面显示。需配合[前端](https://dlframe.picpic.site/)使用。前端代码开源在[仓库](https://github.com/picpic2013/dlframe-front.git)。
 
 ## 安装方法
 
@@ -36,8 +36,8 @@ conda create -n dlframe python=3.8
 conda activate dlframe
 
 # 克隆仓库与安装
-git clone 
-cd dlframe
+git clone https://github.com/picpic2013/dlframe-back.git
+cd dlframe-back
 python ./setup.py install
 ~~~
 
