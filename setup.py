@@ -4,7 +4,7 @@ import os
 
 here = pathlib.Path(__file__).parent.resolve()
 
-with open(os.path.join(here, 'README.md'), 'r') as mdFile:
+with open(os.path.join(here, 'README.md'), 'r',encoding='UTF-8') as mdFile:
     long_description = mdFile.read()
 
 setup(
