@@ -26,19 +26,22 @@ class DebugModel(Model):
 
     def train(self, trainDataset: DataSet) -> None:
         self.logger.print('training...')
-        assert False, 'fafds'
+        self.logger.print('we have trainging input', [trainDataset[_] for _ in range(len(trainDataset))])
         return super().train(trainDataset)
 
     def test(self, testDataset: DataSet) -> Any:
         self.logger.print('testing...')
-        return super().test(testDataset)
+        self.logger.print('we have testing input', [testDataset[_] for _ in range(len(testDataset))])
+        return [testDataset[_] for _ in range(len(testDataset))]
 
 class DebugJudger(Judger):
     def __init__(self) -> None:
         super().__init__()
 
     def judge(self, y_hat, test_dataset: DataSet) -> None:
-        self.logger.print('log')
+        self.logger.print('judging')
+        self.logger.print('y_hat is', y_hat)
+        self.logger.print('test_dataset is', [test_dataset[_] for _ in range(len(test_dataset))])
         return super().judge(y_hat, test_dataset)
 
 if __name__ == '__main__':
