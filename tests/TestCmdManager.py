@@ -26,6 +26,7 @@ class DebugModel(Model):
 
     def train(self, trainDataset: DataSet) -> None:
         self.logger.print('training...')
+        assert False, 'fafds'
         return super().train(trainDataset)
 
     def test(self, testDataset: DataSet) -> Any:

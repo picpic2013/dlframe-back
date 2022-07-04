@@ -1,4 +1,5 @@
 from __future__ import annotations
+from email.policy import default
 
 from typing import Dict, List, Tuple
 
@@ -76,32 +77,26 @@ class Manager:
         '''
         name -> [paramName, defaultValues]
         '''
+        obj = None
         if name in self.datasets.keys():
             obj = self.datasets[name]
-            names = obj.__init__.__code__.co_varnames
-            defaults = obj.__init__.__defaults__
-            return names, defaults
-
         elif name in self.splitters.keys():
             obj = self.splitters[name]
-            names = obj.__init__.__code__.co_varnames
-            defaults = obj.__init__.__defaults__
-            return names, defaults
-
         elif name in self.models.keys():
             obj = self.models[name]
-            names = obj.__init__.__code__.co_varnames
-            defaults = obj.__init__.__defaults__
-            return names, defaults
-
         elif name in self.judgers.keys():
-            obj = self.judgers[name]
-            names = obj.__init__.__code__.co_varnames
-            defaults = obj.__init__.__defaults__
-            return names, defaults
-        
+            obj = self.judgers[name]        
         else:
             raise 'unknown name'
+
+        names = []
+        defaults = []
+        for key, value in vars(obj).items():
+            if key == 'logger':
+                continue
+            names.append(key)
+            defaults.append(value)
+        return names, defaults
 
     def run(self, conf: ManagerConfig) -> None:
         assert conf.dataset in self.datasets.keys(), 'unknown dataset class name'
