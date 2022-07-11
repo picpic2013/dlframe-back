@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(
 from typing import Any, Tuple
 import math
 
-from dlframe import DataSet, Splitter, Model, Judger, WebManager
+from dlframe import DataSet, Splitter, Model, Judger, WebManager, CmdManager
 
 class TestDataset(DataSet):
     def __init__(self, num) -> None:
@@ -74,7 +74,7 @@ class TestJudger(Judger):
         return super().judge(y_hat, test_dataset)
 
 if __name__ == '__main__':
-    WebManager().register_dataset(
+    CmdManager().register_dataset(
         TestDataset(10), '10_nums'
     ).register_dataset(
         TestDataset(20), '20_nums'
