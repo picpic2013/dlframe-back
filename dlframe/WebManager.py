@@ -126,7 +126,8 @@ class WebManager(CalculationNodeManager):
                         })
                         await socket.send(response)
 
-        print('server is running at [{}:{}]...'.format(host, port))
+        print('Backend server is running at [{}:{}]...'.format(host, port))
+        print('To visit front end page: https://picpic2013.github.io/dlframe-front/')
 
         event_loop.run_until_complete(websockets.serve(onRecv, host, port))
         event_loop.run_forever()
