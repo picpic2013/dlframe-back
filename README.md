@@ -29,13 +29,11 @@ judger.judge(y_hat, test_data)
 
 ~~~bash
 # 可选，新建 conda 环境
-conda create -n dlframe python=3.8
+conda create -n dlframe python=3.10
 conda activate dlframe
 
-# 克隆仓库与安装
-git clone https://github.com/picpic2013/dlframe-back.git
-cd dlframe-back
-python ./setup.py install
+# 安装
+pip install git+https://github.com/picpic2013/dlframe-back
 ~~~
 
 ## 测试用例

@@ -1,6 +1,7 @@
 from dlframe import WebManager, Logger
 
 import math
+import numpy as np
 
 # 数据集
 class TestDataset:
@@ -58,6 +59,7 @@ class TestModel:
 
     def test(self, testDataset):
         self.logger.print("testing")
+        self.logger.imshow(np.random.randint(0, 256, (100, 100, 3), dtype=np.uint8))
         return testDataset
 
 # 结果判别器
