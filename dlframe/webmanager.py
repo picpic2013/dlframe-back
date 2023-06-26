@@ -1,31 +1,12 @@
-from dlframe.logger import Logger
-from dlframe.manager import Manager, ManagerConfig
-
-import asyncio
-import websockets
-import json
 import queue
 import threading
+import asyncio
+import json
+import websockets
 import traceback
 
-class WebLogger(Logger):
-    def __init__(self, socket, name='untitled') -> None:
-        super().__init__()
-        self.socket = socket
-        self.name = name
-
-    def print(self, *params, end='\n') -> Logger:
-        self.socket.send(json.dumps({
-            'status': 200, 
-            'type': 'print', 
-            'data': {
-                'content': '[{}]: '.format(self.name) + ' '.join([str(_) for _ in params]) + end
-            }
-        }))
-        return super().print(*params, end=end)
-
-    def progess(self, percentage: float) -> Logger:
-        return super().progess(percentage)
+from dlframe.CalculationNodeManager import CalculationNodeManager
+from dlframe.Logger import Logger
 
 class SendSocket:
     def __init__(self, socket) -> None:
@@ -47,9 +28,17 @@ class SendSocket:
     def send(self, content: str):
         self.sendBuffer.put(content)
 
-class WebManager(Manager):
-    def __init__(self) -> None:
+class WebManager(CalculationNodeManager):
+    def __init__(self, host='0.0.0.0', port=8765) -> None:
         super().__init__()
+        self.host = host
+        self.port = port
+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.start(self.host, self.port)
 
     def start(self, host='0.0.0.0', port=8765) -> None:
         event_loop = asyncio.new_event_loop()
@@ -76,31 +65,49 @@ class WebManager(Manager):
                         response = json.dumps({
                             'status': 200, 
                             'type': 'overview', 
-                            'data': {
-                                'datasets': list(self.datasets.keys()), 
-                                'splitters': list(self.splitters.keys()), 
-                                'models': list(self.models.keys()), 
-                                'judgers': list(self.judgers.keys())
-                            }
+                            'data': self.inspect()
                         })
                         await socket.send(response)
 
                     elif message['type'] == 'run':
                         params = message['params']
-                        conf = ManagerConfig(
-                            params['datasetName'], 
-                            params['splitterName'], 
-                            params['modelName'], 
-                            params['judgerName'], 
+                        conf = params
 
-                            dataset_params={'logger': WebLogger(sendSocket, params['datasetName'])}, 
-                            splitter_params={'logger': WebLogger(sendSocket, params['splitterName'])}, 
-                            model_params={'logger': WebLogger(sendSocket, params['modelName'])}, 
-                            judger_params={'logger': WebLogger(sendSocket, params['judgerName'])}, 
-                        )
+                        def image2base64(img):
+                            import base64
+                            from io import BytesIO
+                            from PIL import Image
+
+                            # 创建一个示例NumPy数组（图像）
+                            image_np = img
+
+                            # 将NumPy数组转换为PIL.Image对象
+                            image_pil = Image.fromarray(image_np)
+
+                            # 将PIL.Image对象保存为字节流
+                            buffer = BytesIO()
+                            image_pil.save(buffer, format='JPEG')
+                            buffer.seek(0)
+
+                            # 使用base64库将字节流编码为base64字符串
+                            image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+
+                            return image_base64
+
+
+                        for logger in Logger.loggers.values():
+                            if logger.trigger is None:
+                                logger.trigger = lambda x: sendSocket.send(json.dumps({
+                                    'status': 200, 
+                                    'type': x['type'], 
+                                    'data': {
+                                        'content': '[{}]: '.format(x['name']) + ' '.join([str(_) for _ in x['args']]) + getattr(x['kwargs'], 'end', '\n') if x['type'] == 'print' \
+                                            else image2base64(x['args'])
+                                    }
+                                }))
 
                         try:
-                            self.run(conf)
+                            self.execute(conf)
                         except Exception as e:
                             response = json.dumps({
                                 'status': 200, 
@@ -120,5 +127,6 @@ class WebManager(Manager):
                         await socket.send(response)
 
         print('server is running at [{}:{}]...'.format(host, port))
+
         event_loop.run_until_complete(websockets.serve(onRecv, host, port))
         event_loop.run_forever()

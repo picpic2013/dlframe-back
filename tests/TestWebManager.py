@@ -1,25 +1,45 @@
-import os
-import sys
-sys.path.append(os.path.abspath(
-    os.path.join(
-        os.path.abspath(__file__), '..', '..'
-    )
-))
+from dlframe import WebManager, Logger
 
-from dlframe import WebManager, DirectSplitter
-from TestCmdManager import DebugDataset, DebugModel, DebugJudger
+import numpy as np
+
+class A:
+    def __init__(self, name) -> None:
+        self.name = name
+        self.logger = Logger.get_logger('A')
+
+    def f(self, a):
+        return a + self.name
+    
+    def print(self, x):
+        # print(x)
+        self.logger.print(x)
+
+        image_np = np.random.randint(0, 256, (100, 100, 3), dtype=np.uint8)
+        self.logger.imshow(image_np)
+
+def fsdfs(a, b):
+    return a + b
 
 if __name__ == '__main__':
-    WebManager().register_dataset(
-        DebugDataset(10), '10_ints'
-    ).register_dataset(
-        DebugDataset(20), '20_ints'
-    ).register_splitter(
-        DirectSplitter(0.8), 'split-8:2'
-    ).register_splitter(
-        DirectSplitter(0.5), 'split-5:5'
-    ).register_model(
-        DebugModel()
-    ).register_judger(
-        DebugJudger()
-    ).start()
+
+    with WebManager() as manager:
+
+        a = manager.register_element('a', {
+            'a1': A('a1'), 
+            'a2': A('a2')
+        })
+
+        b = manager.register_element('b', {
+            'b1': fsdfs
+        })
+
+        cc = manager.register_element('c', {
+            's1': 's1', 
+            's2': 's2', 
+            's3': 's3', 
+        })
+
+        tmp = a.f(cc)
+        a.print(tmp)
+        # tmp2 = a.f('aaaa')
+        # a.print(b(a.name, a.name))
