@@ -1,5 +1,7 @@
 class CalculationNode:
-    def __init__(self, attr_name: str, node_manager, last_node=None, element_dict: dict=None, *args, **kwargs) -> None:
+    def __init__(self, attr_name: str, node_manager, last_node=None, element_dict: dict=None, is_root_node=False, *args, **kwargs) -> None:
+        self.is_root_node = is_root_node
+        
         self.attr_name = attr_name
         self.last_nodes = [last_node] if last_node is not None else []
         self.next_nodes = []
@@ -24,7 +26,7 @@ class CalculationNode:
         all_args = []
         for arg in args:
             if type(arg) is not CalculationNode:
-                arg = CalculationNode(str(arg), self.node_manager, None, {str(arg): arg})
+                arg = CalculationNode(str(arg), self.node_manager, None, {str(arg): arg}, is_root_node=True)
             arg.next_nodes.append(self)
             self.last_nodes.append(arg)
             all_args.append(arg)
@@ -33,7 +35,7 @@ class CalculationNode:
         for kw in kwargs.keys():
             arg = kwargs[kw]
             if type(arg) is not CalculationNode:
-                arg = CalculationNode(str(arg), self.node_manager, None, {str(arg): arg})
+                arg = CalculationNode(str(arg), self.node_manager, None, {str(arg): arg}, is_root_node=True)
             arg.next_nodes.append(self)
             self.last_nodes.append(arg)
             all_kwargs.setdefault(kw, arg)
@@ -51,10 +53,13 @@ class CalculationNode:
         return node
     
     def __getitem__(self, index):
+        index_arg_node = index
+        if type(index) != CalculationNode:
+            index_arg_node = CalculationNode(str(index), self.node_manager, None, {str(index): index}, is_root_node=True)
+
         node = CalculationNode('__getitem__', self.node_manager, self)
         node.is_function = True
 
-        index_arg_node = CalculationNode(str(index), self.node_manager, None, {str(index): index})
         index_arg_node.next_nodes.append(node)
         node.last_nodes.append(index_arg_node)
 

@@ -73,7 +73,7 @@ class TestJudger:
         self.logger.print("gt = {}".format([test_dataset[i] for i in range(len(test_dataset))]))
 
 if __name__ == '__main__':
-    with WebManager() as manager:
+    with WebManager(parallel=False) as manager:
 
         dataset = manager.register_element('数据集', {'10_nums': TestDataset(10), '20_nums': TestDataset(20)})
         splitter = manager.register_element('数据分割', {'ratio:0.8': TestSplitter(0.8), 'ratio:0.5': TestSplitter(0.5)})

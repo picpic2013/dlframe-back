@@ -3,18 +3,25 @@ from dlframe.CalculationNode import CalculationNode
 from dlframe.ExecutionNode import ExecutionNode
 
 class CalculationNodeManager:
-    def __init__(self) -> None:
+    def __init__(self, parallel=False) -> None:
         self.nodes = {}
         self.element_nodes = {}
 
+        self.latest_node = None
+        self.parallel = parallel
+
     def register_node(self, node: CalculationNode):
         self.nodes.setdefault(id(node), node)
+        if not self.parallel:
+            if self.latest_node is not None:
+                self.latest_node > node
+            self.latest_node = node
         return self
 
     def register_element(self, name: str, element_dict: dict=None, *args, **kwargs):
         if element_dict is None:
             element_dict = {}
-        node = CalculationNode('__Element__' + str(element_dict), self, None, element_dict, *args, **kwargs)
+        node = CalculationNode('__Element__' + str(element_dict), self, None, element_dict, is_root_node=True, *args, **kwargs)
         self.element_nodes.setdefault(id(node), name)
         return node
 

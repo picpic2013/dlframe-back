@@ -11,7 +11,7 @@ class ExecutionNode:
     def execute(self, config, node_dict):
         assert not self.end_execution, 'I do not know why this can happen'
         
-        if len(self.node.last_nodes) == 0: # root nodes
+        if self.node.is_root_node: # root nodes
             try:
                 sub_config = config[self.node.node_manager.element_nodes[id(self.node)]]
                 self.result = self.node.element_dict[sub_config]

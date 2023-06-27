@@ -29,8 +29,8 @@ class SendSocket:
         self.sendBuffer.put(content)
 
 class WebManager(CalculationNodeManager):
-    def __init__(self, host='0.0.0.0', port=8765) -> None:
-        super().__init__()
+    def __init__(self, host='0.0.0.0', port=8765, parallel=False) -> None:
+        super().__init__(parallel=parallel)
         self.host = host
         self.port = port
 
