@@ -16,19 +16,10 @@ class CalculationNode:
         self.node_manager.register_node(self)
     
     def __call__(self, *args, **kwargs):
-        self.is_function = True
-
-        if self.element_dict is not None and type(next(iter(self.element_dict.values()))) == type:
-            for t in self.element_dict.values():
-                assert type(t) == type, 'elements should have same type'
-            self.is_init_function = True
-
         all_args = []
         for arg in args:
             if type(arg) is not CalculationNode:
                 arg = CalculationNode(str(arg), self.node_manager, None, {str(arg): arg}, is_root_node=True)
-            arg.next_nodes.append(self)
-            self.last_nodes.append(arg)
             all_args.append(arg)
 
         all_kwargs = {}
@@ -36,13 +27,29 @@ class CalculationNode:
             arg = kwargs[kw]
             if type(arg) is not CalculationNode:
                 arg = CalculationNode(str(arg), self.node_manager, None, {str(arg): arg}, is_root_node=True)
-            arg.next_nodes.append(self)
-            self.last_nodes.append(arg)
             all_kwargs.setdefault(kw, arg)
 
-        self.function_args = all_args
-        self.function_kwargs = all_kwargs
-        return self
+        node = CalculationNode('function_call', self.node_manager, self)
+        self.next_nodes.append(node)
+
+        node.is_function = True
+        node.function_args = all_args
+        node.function_kwargs = all_kwargs
+
+        if self.element_dict is not None and type(next(iter(self.element_dict.values()))) == type:
+            for t in self.element_dict.values():
+                assert type(t) == type, 'elements should have same type'
+            node.is_init_function = True
+
+        for arg in all_args:
+            arg.next_nodes.append(node)
+            node.last_nodes.append(arg)
+        for kw in all_kwargs.keys(): 
+            arg = kwargs[kw]
+            arg.next_nodes.append(node)
+            node.last_nodes.append(arg)
+        
+        return node
     
     def __getattr__(self, __name: str):
         if __name == '__iter__':
@@ -53,20 +60,10 @@ class CalculationNode:
         return node
     
     def __getitem__(self, index):
-        index_arg_node = index
-        if type(index) != CalculationNode:
-            index_arg_node = CalculationNode(str(index), self.node_manager, None, {str(index): index}, is_root_node=True)
-
         node = CalculationNode('__getitem__', self.node_manager, self)
-        node.is_function = True
-
-        index_arg_node.next_nodes.append(node)
-        node.last_nodes.append(index_arg_node)
-
-        node.function_args = [index_arg_node]
-
         self.next_nodes.append(node)
-        return node
+        
+        return node(index)
     
     def __gt__(self, other):
         self.next_nodes.append(other)

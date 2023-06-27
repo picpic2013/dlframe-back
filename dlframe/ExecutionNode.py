@@ -32,7 +32,7 @@ class ExecutionNode:
                     current_function = next(iter(self.node.element_dict.values()))
                 self.result = current_function(*args, **kwargs)
             else: # class method node
-                self.result = getattr(node_dict[id(self.node.last_nodes[0])].result, self.node.attr_name)(*args, **kwargs)
+                self.result = node_dict[id(self.node.last_nodes[0])].result(*args, **kwargs)
         else: # attr nodes
             self.result = getattr(node_dict[id(self.node.last_nodes[0])].result, self.node.attr_name)
 
