@@ -96,17 +96,17 @@ class WebManager(CalculationNodeManager):
 
                             return image_base64
 
-
+                        Logger.global_trigger = lambda x: sendSocket.send(json.dumps({
+                            'status': 200, 
+                            'type': x['type'], 
+                            'data': {
+                                'content': '[{}]: '.format(x['name']) + ' '.join([str(_) for _ in x['args']]) + getattr(x['kwargs'], 'end', '\n') if x['type'] == 'print' \
+                                    else image2base64(x['args'])
+                            }
+                        }))
                         for logger in Logger.loggers.values():
                             if logger.trigger is None:
-                                logger.trigger = lambda x: sendSocket.send(json.dumps({
-                                    'status': 200, 
-                                    'type': x['type'], 
-                                    'data': {
-                                        'content': '[{}]: '.format(x['name']) + ' '.join([str(_) for _ in x['args']]) + getattr(x['kwargs'], 'end', '\n') if x['type'] == 'print' \
-                                            else image2base64(x['args'])
-                                    }
-                                }))
+                                logger.trigger = Logger.global_trigger
 
                         try:
                             self.execute(conf)

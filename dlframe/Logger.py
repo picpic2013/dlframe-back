@@ -27,8 +27,9 @@ class Logger:
 
     @classmethod
     def get_logger(cls, name):
-        logger = cls(name)
+        logger = cls(name, trigger=Logger.global_trigger)
         cls.loggers.setdefault(id(logger), logger)
         return logger
 
 Logger.loggers = {}
+Logger.global_trigger = None
