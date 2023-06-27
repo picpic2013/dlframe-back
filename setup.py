@@ -11,7 +11,7 @@ setup(
     name='dlframe', 
     version='0.0.2', 
     packages=['dlframe'], 
-    url='https://blog.picpic.site', 
+    url='https://github.com/picpic2013/dlframe-back', 
     license='MIT', 
     author='PIC', 
     author_email='picpic2019@gmail.com', 
