@@ -14,10 +14,20 @@
 参考运行逻辑：
 
 ~~~python
+dataset = manager.register_element('数据集')
+splitter = manager.register_element('数据分割')
+model = manager.register_element('模型')
+judger = manager.register_element('评价指标')
+
 train_data_test_data = splitter.split(dataset)
 train_data, test_data = train_data_test_data[0], train_data_test_data[1]
 model.train(train_data)
 y_hat = model.test(test_data)
+
+# if you want model.conclusion execute after y_hat, you can do this
+# you can also use model.conclusion() < y_hat
+y_hat > model.conclusion()
+
 judger.judge(y_hat, test_data)
 ~~~
 

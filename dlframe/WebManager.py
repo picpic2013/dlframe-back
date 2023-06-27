@@ -38,6 +38,8 @@ class WebManager(CalculationNodeManager):
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            raise exc_val
         self.start(self.host, self.port)
 
     def start(self, host='0.0.0.0', port=8765) -> None:

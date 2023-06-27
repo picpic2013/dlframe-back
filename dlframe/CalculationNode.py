@@ -62,3 +62,13 @@ class CalculationNode:
 
         self.next_nodes.append(node)
         return node
+    
+    def __gt__(self, other):
+        self.next_nodes.append(other)
+        other.last_nodes.append(self)
+        return self
+
+    def __lt__(self, other):
+        self.last_nodes.append(other)
+        other.next_nodes.append(self)
+        return self
