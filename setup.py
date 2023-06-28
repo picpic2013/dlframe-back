@@ -8,8 +8,8 @@ with open(os.path.join(here, 'README.md'), 'r',encoding='UTF-8') as mdFile:
     long_description = mdFile.read()
 
 setup(
-    name='dlframe', 
-    version='0.0.2', 
+    name='dynamic-links', 
+    version='0.0.1', 
     packages=['dlframe'], 
     url='https://github.com/picpic2013/dlframe-back', 
     license='MIT', 
