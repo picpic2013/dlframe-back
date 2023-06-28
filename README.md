@@ -27,11 +27,14 @@ def f2(x):
 
 # 定义元素管理器
 with WebManager() as manager:
+    
+    # 定义元素 + 定义元素可选的 python 对象
     func = manager.register_element('func', {
         'f1': f1, 
         'f2': f2
     })
 
+    # 定义框架执行逻辑
     func('test')
 ~~~
 
