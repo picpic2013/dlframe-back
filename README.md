@@ -172,9 +172,14 @@ result1 > result2
 result1 > clsss.f2()
 ~~~
 
---- 
+### 指定运行 ip 与端口号
 
-### 前端
+~~~python
+with WebManager(host='0.0.0.0', port=8765):
+    pass
+~~~
+
+## 关于前端
 
 本框架仅提供 WebSocket 服务，不提供页面显示。需配合[前端](https://picpic2013.github.io/dlframe-front/)使用。前端代码开源在[仓库](https://github.com/picpic2013/dlframe-front.git)。
 
