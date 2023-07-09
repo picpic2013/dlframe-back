@@ -36,7 +36,7 @@ class CalculationNode:
         node.function_args = all_args
         node.function_kwargs = all_kwargs
 
-        if self.element_dict is not None and type(next(iter(self.element_dict.values()))) == type:
+        if self.element_dict is not None and len(self.element_dict) > 0 and type(next(iter(self.element_dict.values()))) == type:
             for t in self.element_dict.values():
                 assert type(t) == type, 'elements should have same type'
             node.is_init_function = True

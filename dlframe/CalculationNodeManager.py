@@ -54,7 +54,7 @@ class CalculationNodeManager:
                     node_queue.put(next_node_name)
         return self
     
-    def register(self, class_type_name=None, option_name=None, element=None, display=None):
+    def register(self, class_type_name, option_name=None, element=None, display=None):
         if type(option_name) == dict:
             if display is None:
                 display = True
@@ -63,7 +63,7 @@ class CalculationNodeManager:
             if option_name is None:
                 option_name = element.__name__
             node = None
-            if class_type_name is None or class_type_name not in self.class_type_name2node.keys():
+            if class_type_name not in self.class_type_name2node.keys():
                 element_dict = {option_name: element}
                 if class_type_name is None:
                     class_type_name = '__Element__' + str(element_dict)
@@ -85,4 +85,6 @@ class CalculationNodeManager:
         return _warp_function_
     
     def __getitem__(self, key):
-        return self.class_type_name2node[key]
+        if key in self.class_type_name2node.keys():
+            return self.class_type_name2node[key]
+        return self.register(key, {}, display=True)
