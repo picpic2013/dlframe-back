@@ -1,5 +1,5 @@
 class CalculationNode:
-    def __init__(self, attr_name: str, node_manager, last_node=None, element_dict: dict=None, is_root_node=False, *args, **kwargs) -> None:
+    def __init__(self, attr_name: str, node_manager, last_node=None, element_dict: dict=None, is_root_node=False) -> None:
         self.is_root_node = is_root_node
         
         self.attr_name = attr_name
@@ -13,7 +13,7 @@ class CalculationNode:
         self.function_args = []
         self.function_kwargs = {}
 
-        self.node_manager.register_node(self)
+        self.node_manager._register_node(self)
     
     def __call__(self, *args, **kwargs):
         all_args = []

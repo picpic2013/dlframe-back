@@ -42,7 +42,11 @@ class WebManager(CalculationNodeManager):
             raise exc_val
         self.start(self.host, self.port)
 
-    def start(self, host='0.0.0.0', port=8765) -> None:
+    def start(self, host=None, port=None) -> None:
+        if host is None:
+            host = self.host
+        if port is None:
+            port = self.port
         event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(event_loop)
         async def onRecv(socket, path):

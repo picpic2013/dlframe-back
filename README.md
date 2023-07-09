@@ -29,9 +29,9 @@ def f2(x):
 with WebManager() as manager:
     
     # 定义元素 + 定义元素可选的 python 对象
-    func = manager.register_element('func', {
-        'f1': f1, 
-        'f2': f2
+    func = manager.register('func', {
+        'function1': f1, 
+        'function2': f2
     })
 
     # 定义框架执行逻辑
@@ -39,6 +39,61 @@ with WebManager() as manager:
 ~~~
 
 运行程序，即可通过[前端](https://picpic2013.github.io/dlframe-front/)选择执行 `f1` 或 `f2`。
+
+### 另一个例子
+
+~~~python
+from dlframe import WebManager
+
+manager = WebManager()
+
+# 定义元素可选的 python 对象
+@manager.register('func', 'function1')
+# 也可 @manager.register('func') 会自动以 f1 作为选项名称
+def f1(x):
+    print('f1', x)
+
+# 定义元素可选的 python 对象
+@manager.register('func', 'function2')
+def f2(x):
+    print('f2', x)
+
+# 定义元素管理器
+with manager:
+    
+    # 定义元素
+    func = manager['func']
+
+    # 定义框架执行逻辑
+    func('test')
+~~~
+
+与上一个例子完全等价。
+
+### 又一个例子
+~~~python
+from dlframe import WebManager
+
+def f1(x):
+    print('f1', x)
+
+def f2(x):
+    print('f2', x)
+
+# 定义元素管理器
+with WebManager() as manager:
+    # 定义元素可选的 python 对象
+    manager.register('func', 'function1', f1)
+    manager.register('func', 'function2', f2)
+
+    # 定义元素
+    func = manager['func']
+
+    # 定义框架执行逻辑
+    func('test')
+~~~
+
+与上一个例子完全等价。
 
 ### 更复杂的例子
 
@@ -51,24 +106,21 @@ from dlframe import WebManager
 with WebManager() as manager:
 
     # 定义元素 + 定义元素可选的 python 对象
-    dataset = manager.register_element('数据集', {
+    dataset = manager.register('数据集', {
         'iris': IrisDataset(), 
         'watermelon': WatermelonDataset()
     })
-    split_ratio = manager.register_element('数据分割比例', {
+    split_ratio = manager.register('数据分割比例', {
         '10%': 0.1, '30%': 0.3
     })
-    Splitter = manager.register_element('数据分割器', {
+    Splitter = manager.register('数据分割器', {
         'k-fold': KFoldSplitter, 'random': RandomSplitter
     })
-    learning_rate = manager.register_element('模型学习率', {
-        'low': 1e-3, 'high': 1e-1
+    Model = manager.register('模型', {
+        'decision-tree': DecisionTreeModel, 
+        'svm': SVMModel
     })
-    Model = manager.register_element('模型', {
-        'cnn': CnnModel, 
-        'resnet': ResnetModel
-    })
-    judger = manager.register_element('评价指标', {
+    judger = manager.register('评价指标', {
         'accuracy': AccuracyJudger(), 'f1': F1ScoreJudger()
     })
 
@@ -78,7 +130,7 @@ with WebManager() as manager:
     train_data = train_data_test_data[0]
     test_data = train_data_test_data[1]
     
-    model = Model(learning_rate)
+    model = Model()
     model.train(train_data)
     y_hat = model.test(test_data)
 

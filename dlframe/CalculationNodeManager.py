@@ -6,11 +6,12 @@ class CalculationNodeManager:
     def __init__(self, parallel=False) -> None:
         self.nodes = {}
         self.element_nodes = {}
+        self.class_type_name2node = {}
 
         self.latest_node = None
         self.parallel = parallel
 
-    def register_node(self, node: CalculationNode):
+    def _register_node(self, node: CalculationNode):
         self.nodes.setdefault(id(node), node)
         if not self.parallel:
             if self.latest_node is not None:
@@ -18,11 +19,15 @@ class CalculationNodeManager:
             self.latest_node = node
         return self
 
-    def register_element(self, name: str, element_dict: dict=None, *args, **kwargs):
+    def register_element(self, name: str, element_dict: dict=None, display: bool=True):
         if element_dict is None:
             element_dict = {}
-        node = CalculationNode('__Element__' + str(element_dict), self, None, element_dict, is_root_node=True, *args, **kwargs)
-        self.element_nodes.setdefault(id(node), name)
+        node = CalculationNode('__Element__' + str(element_dict), self, None, element_dict, is_root_node=True)
+        self.class_type_name2node.setdefault(name, node)
+        if not display:
+            assert len(element_dict) == 1, 'you can only register one element if not display'
+        else:
+            self.element_nodes.setdefault(id(node), name)
         return node
 
     def inspect(self):
@@ -48,3 +53,36 @@ class CalculationNodeManager:
                 if node_dict[next_node_name].in_degree == 0:
                     node_queue.put(next_node_name)
         return self
+    
+    def register(self, class_type_name=None, option_name=None, element=None, display=None):
+        if type(option_name) == dict:
+            if display is None:
+                display = True
+            return self.register_element(class_type_name, option_name, display)
+        if element is not None:
+            if option_name is None:
+                option_name = element.__name__
+            node = None
+            if class_type_name is None or class_type_name not in self.class_type_name2node.keys():
+                element_dict = {option_name: element}
+                if class_type_name is None:
+                    class_type_name = '__Element__' + str(element_dict)
+                elif display is None:
+                    display = True
+                node = CalculationNode(class_type_name, self, None, element_dict, is_root_node=True)
+                self.class_type_name2node.setdefault(class_type_name, node)
+                if display:
+                    self.element_nodes.setdefault(id(node), class_type_name)
+            else:
+                node = self.class_type_name2node[class_type_name]
+                node.element_dict.setdefault(option_name, element)
+                if display is not None:
+                    assert False, f'The display option is only supported when registering for the first time. Please set the display option when registering element "{next(iter(node.element_dict.keys()))}".'
+            return node
+        def _warp_function_(raw_element, class_type_name=class_type_name, option_name=option_name, display=display, self=self):
+            self.register(class_type_name, option_name, raw_element, display)
+            return raw_element
+        return _warp_function_
+    
+    def __getitem__(self, key):
+        return self.class_type_name2node[key]
