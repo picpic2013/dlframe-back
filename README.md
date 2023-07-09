@@ -172,7 +172,7 @@ logger.print('str1', 'str2', end='\t')
 logger.imshow(
     np.random.randint(
         0, 256, (100, 100, 3), 
-        dtype=np。uint8
+        dtype=np.uint8
     )
 )
 ~~~
