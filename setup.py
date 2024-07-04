@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import pathlib
 import os
 
@@ -9,8 +9,8 @@ with open(os.path.join(here, 'README.md'), 'r',encoding='UTF-8') as mdFile:
 
 setup(
     name='dynamic-links', 
-    version='0.1.1', 
-    packages=['dlframe'], 
+    version='0.2.0', 
+    packages=find_packages(), 
     url='https://github.com/picpic2013/dlframe-back', 
     license='MIT', 
     author='PIC', 
@@ -18,7 +18,7 @@ setup(
     description='a calculation framework', 
     long_description=long_description, 
     long_description_content_type="text/markdown",
-    python_requires=">=3.8, <4", 
+    python_requires=">=3.10, <4", 
     install_requires=[
         'websockets>=10.3', 'numpy', 'Pillow'
     ]
