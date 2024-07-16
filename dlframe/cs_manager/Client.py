@@ -56,7 +56,10 @@ class Client:
                 for task in pending:
                     task.cancel()
         
-        asyncio.run_coroutine_threadsafe(handler(), loop=self.event_loop)
+        self.event_loop.create_task(handler())
 
     def send(self, packet: Pkt):
-        self.send_queue.put_nowait(packet)
+        asyncio.run_coroutine_threadsafe(
+            self.send_queue.put(packet), 
+            self.event_loop
+        )

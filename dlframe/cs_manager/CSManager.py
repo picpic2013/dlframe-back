@@ -95,6 +95,7 @@ class CSManager:
             print(f"No route for pkt: {pkt}")
 
     def _thread_worker(self):
+        asyncio.set_event_loop(self.event_loop)
         self.event_loop.run_forever()
 
     def register_fn(self, fn_addr, on_recv_fn=None) -> ModuleSender:

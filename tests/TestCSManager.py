@@ -7,9 +7,8 @@ if __name__ == '__main__':
     manager1.start()
 
     manager2 = CSManager(addr="server2", host="0.0.0.0", port=8767)
-    manager2.start()
-
     manager2.connect('127.0.0.1', 8765)
+    manager2.start()
 
     def recv(data):
         print(data, data.decode('utf-8'))
@@ -23,6 +22,6 @@ if __name__ == '__main__':
     for _ in range(10):
         
         sender.send(str(_).encode('utf-8'), "server2/recv")
-    
-    time.sleep(100)
+        # sender.send(str(_).encode('utf-8'), "server1/recv")
+        time.sleep(1)
         

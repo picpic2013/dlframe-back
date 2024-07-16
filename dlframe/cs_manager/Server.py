@@ -87,6 +87,10 @@ class Server:
     def send(self, packet: Pkt):
         to_addr = packet.to_addr.split(SERVER_ADDR_SPLITTER)[0]
         if self.has_link(to_addr):
-            self.links[to_addr].send_queue.put_nowait(packet)
+            asyncio.run_coroutine_threadsafe(
+                self.links[to_addr].send_queue.put(packet), 
+                self.event_loop
+            )
+            
         else:
             self.on_error_callback(None, None, None, f"No route to {to_addr}", None, None)
