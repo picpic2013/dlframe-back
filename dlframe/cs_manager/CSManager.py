@@ -9,7 +9,7 @@ from dlframe.cs_manager.utils import _is_local_addr, _is_control_packet
 from dlframe.cs_manager.consts import SERVER_ADDR_SPLITTER, BROADCAST_PACKET_PREFIX, PING_PACKET_ADDR, PONG_PACKET_ADDR
 
 class CSManager:
-    def __init__(self, addr, host='0.0.0.0', port=8765) -> None:
+    def __init__(self, addr, host='0.0.0.0', port=8765, route_table=None) -> None:
         self.addr = addr
         self.host = host
         self.port = port
@@ -37,7 +37,7 @@ class CSManager:
                     return
 
         def on_error_callback(websocket, pkt, e, msg):
-            print(f"Server Error: {msg}")
+            # print(f"Server Error: {msg}")
             for fn in self.on_server_error_callback_list:
                 pkt = fn(websocket, pkt, e, msg)
                 if pkt is None:
@@ -70,29 +70,48 @@ class CSManager:
         self.on_client_send_callback_list = []
         self.on_client_error_callback_list = []
 
+        self.on_forward_callback_list = []
+        self.on_forward_error_callback_list = []
+
         self.running_thread = threading.Thread(target=self._thread_worker)
         self.running_thread.daemon = True
-    def _forward(self, pkt: Pkt):
+
+        if route_table is None:
+            route_table = dict()
+        self.route_table = route_table
+    def _forward(self, pkt: Pkt, to_server_addr=None):
+        for fn in self.on_forward_callback_list:
+            fn(pkt)
         to_addr = pkt.to_addr
         to_addr_split = to_addr.split(SERVER_ADDR_SPLITTER)
-        to_server_addr = to_addr_split[0]
+        if to_server_addr is None:
+            to_server_addr = to_addr_split[0]
         to_fn_addr = to_addr_split[-1]
         if _is_local_addr(to_server_addr, self.addr):
             if to_fn_addr in self.registered_fns.keys():
                 self.registered_fns[to_fn_addr].on_recv_fn(pkt.data)
             elif not _is_control_packet(pkt):
-                print(f"No fn route for pkt: {pkt}")
+                for fn in self.on_forward_error_callback_list:
+                    fn(pkt, f"No fn route for pkt: {pkt}")
+                # print(f"No fn route for pkt: {pkt}")
             return
         pkt.ttl -= 1
         if pkt.ttl <= 0:
-            print(f"TTL exceeded: {pkt}")
+            for fn in self.on_forward_error_callback_list:
+                fn(pkt, f"TTL exceeded: {pkt}")
+            # print(f"TTL exceeded: {pkt}")
             return
         if self.server.has_link(to_server_addr):
             self.server.send(pkt)
         elif to_server_addr in self.clients.keys():
             self.clients[to_server_addr].send(pkt)
+        elif to_server_addr in self.route_table.keys():
+            pkt.ttl += 1
+            self._forward(pkt, self.route_table[to_server_addr])
         else:
-            print(f"No route for pkt: {pkt}")
+            for fn in self.on_forward_error_callback_list:
+                fn(pkt, f"No route for pkt: {pkt}")
+            # print(f"No route for pkt: {pkt}")
 
     def _thread_worker(self):
         asyncio.set_event_loop(self.event_loop)
@@ -106,26 +125,30 @@ class CSManager:
         return module_sender
     
     def register_event_callback(self, position, callback_fn):
-        if position == 'server_connect':
+        if position == 'on_server_connect':
             self.on_server_connect_callback_list.append(callback_fn)
-        elif position == 'server_recv':
+        elif position == 'on_server_recv':
             self.on_server_recv_callback_list.append(callback_fn)
-        elif position == 'server_disconnect':
+        elif position == 'on_server_disconnect':
             self.on_server_disconnect_callback_list.append(callback_fn)
-        elif position == 'server_send':
+        elif position == 'on_server_send':
             self.on_server_send_callback_list.append(callback_fn)
-        elif position == 'server_error':
+        elif position == 'on_server_error':
             self.on_server_error_callback_list.append(callback_fn)
-        elif position == 'client_connect':
+        elif position == 'on_client_connect':
             self.on_client_connect_callback_list.append(callback_fn)
-        elif position == 'client_recv':
+        elif position == 'on_client_recv':
             self.on_client_recv_callback_list.append(callback_fn)
-        elif position == 'client_disconnect':
+        elif position == 'on_client_disconnect':
             self.on_client_disconnect_callback_list.append(callback_fn)
-        elif position == 'client_send':
+        elif position == 'on_client_send':
             self.on_client_send_callback_list.append(callback_fn)
-        elif position == 'client_error':
+        elif position == 'on_client_error':
             self.on_client_error_callback_list.append(callback_fn)
+        elif position == 'on_forward':
+            self.on_forward_callback_list.append(callback_fn)
+        elif position == 'on_forward_error':
+            self.on_forward_error_callback_list.append(callback_fn)
         else:
             raise Exception(f"Invalid position: {position}")
 
@@ -184,7 +207,7 @@ class CSManager:
                     return
 
         def on_error_callback(websocket, pkt, e, msg):
-            print(f"Client Error: {msg}")
+            # print(f"Client Error: {msg}")
             for fn in self.on_client_error_callback_list:
                 pkt = fn(websocket, pkt, e, msg)
                 if pkt is None:
