@@ -270,8 +270,8 @@ manager3.start()
 
 ~~~ python
 
-def recv(data):
-    print(data, data.decode('utf-8'))
+def recv(data, from_addr):
+    print(from_addr, ':',data.decode('utf-8'))
 
 manager3.register_fn("recv", recv)
 sender = manager2.register_fn("send")

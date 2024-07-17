@@ -91,7 +91,7 @@ class CSManager:
         to_fn_addr = to_addr_split[-1]
         if _is_local_addr(to_server_addr, self.addr):
             if to_fn_addr in self.registered_fns.keys():
-                self.registered_fns[to_fn_addr].on_recv_fn(pkt.data)
+                self.registered_fns[to_fn_addr].on_recv_fn(pkt.data, pkt.from_addr)
             elif not _is_control_packet(pkt):
                 for fn in self.on_forward_error_callback_list:
                     pkt = fn(pkt, f"No fn route for pkt: {pkt}")

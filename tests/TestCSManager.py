@@ -23,8 +23,8 @@ if __name__ == '__main__':
         on_forward
     )
 
-    def recv(data):
-        print(data, data.decode('utf-8'))
+    def recv(data, from_addr):
+        print(from_addr, ':',data.decode('utf-8'))
     
     manager3.register_fn("recv", recv)
     # manager2.register_fn("recv", recv)
