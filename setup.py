@@ -9,7 +9,7 @@ with open(os.path.join(here, 'README.md'), 'r',encoding='UTF-8') as mdFile:
 
 setup(
     name='dynamic-links', 
-    version='0.2.0', 
+    version='0.2.1', 
     packages=find_packages(), 
     url='https://github.com/picpic2013/dlframe-back', 
     license='MIT', 
