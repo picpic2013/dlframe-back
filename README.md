@@ -231,6 +231,94 @@ with WebManager(host='0.0.0.0', port=8765):
     pass
 ~~~
 
+## 互联模块
+
+本项目提供一个互联模块，可以方便的在各个 python 函数之间传递数据。该模块使用 `websocket` 实现，其拥有一个服务端和多个客户端模块。使用时可先创建 Manager 对象，绑定服务端地址前缀和 tcp 地址与端口，设定路由表，并调用 `manager.start()` 启动 manager 的事件循环。期间可以使用 `manager.connect(host, port)` 函数连接其他 manager。
+
+~~~ python
+
+from dlframe import CSManager
+
+manager1 = CSManager(
+    addr="server1", 
+    host="0.0.0.0", 
+    port=8765
+)
+manager1.start()
+
+manager2 = CSManager(
+    addr="server2", 
+    host="0.0.0.0", 
+    port=8767, 
+    route_table={'server3': 'server1'}
+)
+manager2.connect('127.0.0.1', 8765)
+manager2.start()
+
+manager3 = CSManager(
+    addr="server3", 
+    host="0.0.0.0", 
+    port=8769, 
+    route_table={'server2': 'server1'}
+)
+manager3.connect('127.0.0.1', 8765)
+manager3.start()
+
+~~~
+
+然后可以为每个函数注册一个专属地址，即可收发消息。`send` 发出的消息会被转发到目标地址的 `recv` 函数。
+
+~~~ python
+
+def recv(data):
+    print(data, data.decode('utf-8'))
+
+manager3.register_fn("recv", recv)
+sender = manager2.register_fn("send")
+
+time.sleep(0.5)
+
+sender.send(str(_).encode('utf-8'), "server3/recv")
+
+~~~
+
+本模块支持一些钩子函数，开发者可以自由注册事件回调函数，互联模块将在特定事件发生时，调用注册的回调函数。例如：
+
+~~~ python
+
+def on_forward(pkt):
+    print(str(pkt))
+    return pkt
+
+manager1.register_event_callback(
+    "on_forward", on_forward
+)
+
+~~~
+
+此外，本模块还支持其它回调函数：
+
+~~~ javascript
+
+{
+    'on_server_connect': (websocket, path, send_queue) => None, 
+    'on_server_disconnect': (websocket, path, send_queue) => None, 
+    'on_server_recv': (websocket, pkt, path, send_queue) => Pkt, 
+    'on_server_send': (websocket, pkt, path, send_queue) => Pkt, 
+    'on_server_error': (websocket, pkt, exception, detail_txt, path, send_queue) => Pkt, 
+
+    'on_client_connect': (websocket) => None, 
+    'on_client_disconnect': (websocket) => None, 
+    'on_client_recv': (websocket, pkt) => Pkt, 
+    'on_client_send': (websocket, pkt) => Pkt, 
+    'on_client_error': (websocket, pkt, exception, detail_txt) => Pkt, 
+
+    'on_forward': (pkt) => Pkt, 
+    'on_forward_error': (pkt, detail_txt) => Pkt, 
+}
+
+~~~
+
 ## 关于前端
 
 本框架仅提供 WebSocket 服务，不提供页面显示。需配合[前端](https://picpic2013.github.io/dlframe-front/)使用。前端代码开源在[仓库](https://github.com/picpic2013/dlframe-front.git)。

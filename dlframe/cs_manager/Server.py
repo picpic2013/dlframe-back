@@ -72,7 +72,8 @@ class Server:
                 from_addr, 
                 websocket, 
                 path, 
-                send_queue
+                send_queue, 
+                self.event_loop
             )
         if _is_local_addr(to_server_addr, self.self_addr) and to_fn_addr == PING_PACKET_ADDR:
             self.links[from_addr].send(Pkt(

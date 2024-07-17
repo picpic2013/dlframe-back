@@ -14,7 +14,14 @@ if __name__ == '__main__':
     manager3.connect('127.0.0.1', 8765)
     manager3.start()
 
-    manager1.register_event_callback("on_forward", lambda pkt: print(str(pkt)))
+    def on_forward(pkt):
+        print(str(pkt))
+        return pkt
+
+    manager1.register_event_callback(
+        "on_forward", 
+        on_forward
+    )
 
     def recv(data):
         print(data, data.decode('utf-8'))

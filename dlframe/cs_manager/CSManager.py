@@ -81,7 +81,9 @@ class CSManager:
         self.route_table = route_table
     def _forward(self, pkt: Pkt, to_server_addr=None):
         for fn in self.on_forward_callback_list:
-            fn(pkt)
+            pkt = fn(pkt)
+            if pkt is None:
+                return
         to_addr = pkt.to_addr
         to_addr_split = to_addr.split(SERVER_ADDR_SPLITTER)
         if to_server_addr is None:
@@ -92,13 +94,17 @@ class CSManager:
                 self.registered_fns[to_fn_addr].on_recv_fn(pkt.data)
             elif not _is_control_packet(pkt):
                 for fn in self.on_forward_error_callback_list:
-                    fn(pkt, f"No fn route for pkt: {pkt}")
+                    pkt = fn(pkt, f"No fn route for pkt: {pkt}")
+                    if pkt is None:
+                        return
                 # print(f"No fn route for pkt: {pkt}")
             return
         pkt.ttl -= 1
         if pkt.ttl <= 0:
             for fn in self.on_forward_error_callback_list:
-                fn(pkt, f"TTL exceeded: {pkt}")
+                pkt = fn(pkt, f"TTL exceeded: {pkt}")
+                if pkt is None:
+                    return
             # print(f"TTL exceeded: {pkt}")
             return
         if self.server.has_link(to_server_addr):
@@ -110,7 +116,9 @@ class CSManager:
             self._forward(pkt, self.route_table[to_server_addr])
         else:
             for fn in self.on_forward_error_callback_list:
-                fn(pkt, f"No route for pkt: {pkt}")
+                pkt = fn(pkt, f"No route for pkt: {pkt}")
+                if pkt is None:
+                    return
             # print(f"No route for pkt: {pkt}")
 
     def _thread_worker(self):
@@ -125,6 +133,22 @@ class CSManager:
         return module_sender
     
     def register_event_callback(self, position, callback_fn):
+        '''
+        'on_server_connect': (websocket, path, send_queue) => None, <br>
+        'on_server_disconnect': (websocket, path, send_queue) => None, <br>
+        'on_server_recv': (websocket, pkt, path, send_queue) => Pkt, <br>
+        'on_server_send': (websocket, pkt, path, send_queue) => Pkt, <br>
+        'on_server_error': (websocket, pkt, exception, detail_txt, path, send_queue) => Pkt, <br>
+        <br>
+        'on_client_connect': (websocket) => None, <br>
+        'on_client_disconnect': (websocket) => None, <br>
+        'on_client_recv': (websocket, pkt) => Pkt, <br>
+        'on_client_send': (websocket, pkt) => Pkt, <br>
+        'on_client_error': (websocket, pkt, exception, detail_txt) => Pkt, <br>
+        <br>
+        'on_forward': (pkt) => Pkt, <br>
+        'on_forward_error': (pkt, detail_txt) => Pkt, <br>
+        '''
         if position == 'on_server_connect':
             self.on_server_connect_callback_list.append(callback_fn)
         elif position == 'on_server_recv':
