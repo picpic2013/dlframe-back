@@ -278,7 +278,7 @@ sender = manager2.register_fn("send")
 
 time.sleep(0.5)
 
-sender.send(str(_).encode('utf-8'), "server3/recv")
+sender.send('hello'.encode('utf-8'), "server3/recv")
 
 ~~~
 
