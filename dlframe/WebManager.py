@@ -135,5 +135,9 @@ class WebManager(CalculationNodeManager):
         print('The backend server is running on [{}:{}]...'.format(host, port))
         print('The frontend page is at: https://picpic2013.github.io/dlframe-front/')
 
-        event_loop.run_until_complete(websockets.serve(onRecv, host, port))
+        async def run():
+            async with websockets.serve(onRecv, host, port):
+                await asyncio.Future() 
+
+        event_loop.run_until_complete(run())
         event_loop.run_forever()
