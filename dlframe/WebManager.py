@@ -49,7 +49,7 @@ class WebManager(CalculationNodeManager):
             port = self.port
         event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(event_loop)
-        async def onRecv(socket, path):
+        async def onRecv(socket, path=None):
             msgIdx = -1
             sendSocket = SendSocket(socket)
             async for message in socket:

@@ -20,6 +20,6 @@ setup(
     long_description_content_type="text/markdown",
     python_requires=">=3.10, <4", 
     install_requires=[
-        'websockets>=10.3', 'numpy', 'Pillow'
+        'websockets==10.3', 'numpy', 'Pillow'
     ]
 )
